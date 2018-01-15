@@ -1,0 +1,25 @@
+---
+- name: install and start apache
+  hosts: web
+  remote_user: chinthaka
+  become: yes
+  become_user: root
+  vars:
+   http_port: 80
+   max_clients: 200
+
+  tasks:
+  - name: install apache2
+    apt: name=apache2 state=latest
+  - name: write apache config file
+    template: src=conf/apache2.j2 dest=/etc/apache2/apache2.conf
+    notify:
+    - restart apache2
+  - name: start apache2
+    service: name=apache2 state=running
+  - name: copy files to chin-vm www 
+    copy: src=www/lawfirm/ dest=/var/www/html/ owner=root mode=644 directory_mode=yes
+
+  handlers:
+  - name: restart apache2
+    service: name=apache2 state=restarted
